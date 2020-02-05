@@ -1,7 +1,9 @@
 import data_worker as dt
 import json
 import pymorphy2
-
+import regex
+import string
+import re
 from collections import OrderedDict
 
 
@@ -42,29 +44,34 @@ SENTENSES = True#False
 UNKNOWN_WORDS = True
 COMBINATIONS = True
 NAMES = True
-
+CREATE_LANG_FILE = False#True
 
 l_range = range(1072, 1104)
 names_lemmes = ['Geox', 'Name', 'Surn', 'Patr']
 last_word = None
-def write_word(word) -> None:
+def write_word(word):
        global denials, p, tag
+
+       toReturn = None
        
        if not word.isalpha():
-              return
-              
+              return toReturn
+       for i in word:
+              if not ord(i.lower()) in l_range:
+                     return toReturn
+       
        p = morph.parse(word)[0]
        tag = p.tag
-
+       toReturn = word
        if 'UNKN' in tag:
-                    return
+                    return toReturn
        if 'LATN' in tag or 'ROMN' in tag:
-              return
+              return #toReturn
        fakeFlag = str(p.methods_stack[0][0]) == '<FakeDictionary>'
        isName = (not word.islower()) and (fakeFlag or array_in(names_lemmes, tag))
 
        word = p.normal_form
-       
+       toReturn = word
        if not isName:
               global last_word
               #if len(word)>MAX_LENGTH or len(word)<MIN_LENGTH:
@@ -87,7 +94,7 @@ def write_word(word) -> None:
               if(UNKNOWN_WORDS):
                      if fakeFlag:
                             dt.safe_add(unknown, word)
-                            return
+                            return toReturn
               
 
               
@@ -110,7 +117,7 @@ def write_word(word) -> None:
                             
                             gramm['not counted'] = dt.get(gramm, 'not counted') + 1
                             particals[word] = dt.get(particals, word) + 1
-                            return
+                            return toReturn
 
                      for i in str(tag).replace(' ', ',').split(','):
                             if i!= '': 
@@ -133,8 +140,8 @@ def write_word(word) -> None:
                                    dt.safe_add(names, i) 
                      if fakeFlag:
                             dt.safe_add(names, 'Fake') 
-                            return
-                     
+                            return toReturn
+       return toReturn
                      
 def read(book):
        global last_word
@@ -145,37 +152,31 @@ def read(book):
 
        last_word = None
 
-       while True:
-              string = f.readline().replace('ё', "е")
-              if string == '':
-                     break
-              text += string
-              words = string.split()
-              for i in words:
-                     write_word(i)
-       f.close()
-       
-       #text2 = text.replace('!','.').replace('?','.')#
-       arr = text.split('.')
-       #curr = []
-       #for i in text:
-       #     if i=='.':
-       #            arr.append(curr)
-        #           curr = []
-        #    elif i == '?' or i == '!':
-       #            curr = []
-       #     else:
-       #            curr.append(i)
-
-       if(SENTENSES):
-              for i in arr:
-                     l = len(i)
+       text = f.read().replace('ё', "е").replace('\n',' ').replace('\t',' ').replace('p','р')
+       text = text.replace('e', 'е').replace('o','о').replace('a','а').replace('c', 'с').replace('x', 'х')
+       text = regex.sub('['+'\Q"#$%&\'()*+,/:;<=>@[\\]^_`{|}~\E'+']', ' ', text)
+       text = regex.sub('['+'!\?'+']', '.', text)
+       for sentence in text.split('.'):
+              if(SENTENSES):
+                     l = len(sentence)
                      if l<5 or l>700:
                             continue
                      if l in sent:
                             sent[l] += 1
                      else:
                             sent[l] = 1
+
+              text += sentence
+              words = sentence.split()
+              for i in words:
+                     word = write_word(i)
+                     if CREATE_LANG_FILE:
+                            if word!=None:
+                                   multi_text.append(word.lower())
+              if CREATE_LANG_FILE:
+                            multi_text.append('\n')
+       f.close()
+
 def save_read(i):
        global words, sent, gramm, letters, particals
        if(SIMPLE_COUNT):
@@ -199,11 +200,14 @@ def save_read(i):
               dt.save_words_as(combinations, i, 'combinations')
        if(NAMES):
               dt.save_words_as(names, i, 'names')
+       if CREATE_LANG_FILE:
+              dt.add_file_as(' '.join(multi_text), 'multi_text.txt')
        
        
 
 def read_all(reread = False):
-       global words, sent, gramm, letters, unknown, combinations, denials, names
+       global words, sent, gramm, letters, unknown,combinations
+       global denials, names, multi_text
        for i in dt.get_all_books():
               if dt.no_description(i) or reread:
                      words = {}
@@ -216,7 +220,7 @@ def read_all(reread = False):
                      denials = 0
                      letters = dict([(chr(j), 0) for j in range(1072, 1104)])
                      letters['ё']=0
-                     
+                     multi_text = [] 
                      read(i)
                      gramm['denials'] = denials
                      save_read(i)
@@ -232,6 +236,10 @@ comb = {}
 unknown = {}
 combinations = {}
 names = {}
+multi_text = [] 
 denials = 0
 if __name__ == '__main__':
+       if CREATE_LANG_FILE:
+              dt.add_file_as('', 'multi_text.txt', True)
        read_all()
+       

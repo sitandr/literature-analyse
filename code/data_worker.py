@@ -55,7 +55,15 @@ def save_words_as(words,name, type_='words'):
        json_words = open(get_words_file(name, type_), 'w') 
        json.dump(words,json_words)
        json_words.close()
-
+def add_file_as(data, name, restart = False):
+       f = open(main +'/data/descriptors/' + name, 'w' if restart else 'a') 
+       f.write(data)
+       f.close()
+def get_file_as(name):
+       f = open(main +'/data/descriptors/' + name) 
+       d = f.read(data)
+       f.close()
+       return d
 def get_words(name, type_='words'):
        if name in cash:
               return cash[(name, type_)]

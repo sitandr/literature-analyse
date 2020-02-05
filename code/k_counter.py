@@ -1,6 +1,9 @@
 from diff_counter import*
 import data_worker as dt
 import sentence_length_comparator
+import matplotlib.pyplot as plt
+import math_worker as mt
+
 SQUARE_FUNCTION = lambda l1, l2: (l2 - l1)**2
 SQUARE_FUNCTION.__name__ = 'SQUARE_FUNCTION'
 ##ABS_FUNCTION = lambda l1, l2: abs(l2 - l1)
@@ -14,7 +17,7 @@ SQUARE_FUNCTION.__name__ = 'SQUARE_FUNCTION'
 all_data = dt.get_all_books()
 
 
-prop_stack = ['grammatics', 'combinations', 'letters',
+prop_stack = ['letters', 'grammatics', 'combinations',
               'sentences', 'unknown']
 
 f_aviable = [SQUARE_FUNCTION]
@@ -32,7 +35,8 @@ while prop_stack:
       if dt.get_type_of_data(prop_name) in ['dict', 'list']:
             pass
       elif dt.get_type_of_data(prop_name) == 'sentence_comparator':
-            sentence_length_comparator.separator
+            #sentence_length_comparator.separator
+            pass
       elif dt.get_type_of_data(prop_name) == 'separate':
             key_list = set()
             for i in all_data:
@@ -49,33 +53,35 @@ while prop_stack:
                   
                   for function in f_aviable:
 
-                        sum1 = 0
-                        n1 = 0
-                        sum2 = 0
-                        n2 =0
+                        monoauthors = []
+                        difauthors = []
 
                         for i in all_data:
                               for j in all_data:
                                     if i!=j:
-            
                                           c = function(values[i],
                                                        values[j])
                                           #print(i, j, 'Error:', c, 'monoauthor = ', dt.get_val(i) == dt.get_val(j))
                                           if dt.get_val(i) == dt.get_val(j):
-                                                sum1 += c
-                                                n1 += 1
+                                                monoauthors.append(c)
+            
                                           else:
-                                                sum2 += c
-                                                n2 += 1
-                        sum1 = (sum1/n1) ** (1.0/2)
-                        sum2 = (sum2/n2) ** (1.0/2)
-
+                                                difauthors.append(c)
+                        mi = 9999999
+                        ma = - 9999999
+      
+                        mi = min(mi, min(monoauthors))
+                        ma = max(ma, max(monoauthors))
                         
-                        
-                        if(n1>0 and n2>0 and sum1>0 and sum2>0):
-                              ans = ((sum1)/(sum2))
-                              print(prop_name, key, function.__name__, '(should be minimum):', ans)
-                              dt.safe_add(rating,function.__name__, ans)
+                        mi = min(mi, min(difauthors))
+                        ma = max(ma, max(difauthors))
+                        try:
+                              plt.plot(*mt.create_rasp(monoauthors, min_max = (mi, ma), smoothing = 0.01))
+                        except TypeError:
+                              pass
+                        plt.plot(*mt.create_rasp(difauthors, min_max = (mi, ma), smoothing = 0.01))
+                        plt.title(prop_name+' : '+key, fontsize=22)
+                        plt.show()
       prop_stack.pop()
                               
                                                                   
