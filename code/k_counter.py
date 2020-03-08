@@ -3,6 +3,7 @@ import data_worker as dt
 import sentence_length_comparator
 import matplotlib.pyplot as plt
 import math_worker as mt
+import math
 
 SQUARE_FUNCTION = lambda l1, l2: (l2 - l1)**2
 SQUARE_FUNCTION.__name__ = 'SQUARE_FUNCTION'
@@ -45,6 +46,8 @@ while prop_stack:
             key_list = list(key_list)
             print(prop_name, set(keys(i, prop_name)), 'Left:' , len(prop_stack))
             rating[prop_name] = {}
+            monoauthors = []
+            difauthors = []
             for key in key_list:
                   
                   values = {}
@@ -53,8 +56,7 @@ while prop_stack:
                   
                   for function in f_aviable:
 
-                        monoauthors = []
-                        difauthors = []
+                        
 
                         for i in all_data:
                               for j in all_data:
@@ -67,21 +69,31 @@ while prop_stack:
             
                                           else:
                                                 difauthors.append(c)
-                        mi = 9999999
-                        ma = - 9999999
-      
-                        mi = min(mi, min(monoauthors))
-                        ma = max(ma, max(monoauthors))
-                        
-                        mi = min(mi, min(difauthors))
-                        ma = max(ma, max(difauthors))
-                        try:
-                              plt.plot(*mt.create_rasp(monoauthors, min_max = (mi, ma), smoothing = 0.01))
-                        except TypeError:
-                              pass
-                        plt.plot(*mt.create_rasp(difauthors, min_max = (mi, ma), smoothing = 0.01))
-                        plt.title(prop_name+' : '+key, fontsize=22)
-                        plt.show()
+           
+            for i in range(len(monoauthors)):
+                  monoauthors[i] = math.log(monoauthors[i]) if monoauthors[i]>0 else 0
+                  pass
+            for i in range(len(difauthors)):
+                  difauthors[i] = math.log(difauthors[i]) if difauthors[i]>0 else 0
+                  pass
+            
+
+            mi = 9999999
+            ma = - 9999999
+
+            mi = min(mi, min(monoauthors))
+            ma = max(ma, max(monoauthors))
+            
+            mi = min(mi, min(difauthors))
+            ma = max(ma, max(difauthors))
+
+            try:
+                  plt.plot(*mt.create_rasp(monoauthors, min_max = (mi, ma), smoothing = 0.01))
+            except TypeError:
+                  pass
+            plt.plot(*mt.create_rasp(difauthors, min_max = (mi, ma), smoothing = 0.01))
+            plt.title(prop_name+' : '+key, fontsize=22)
+            plt.show()
       prop_stack.pop()
                               
                                                                   

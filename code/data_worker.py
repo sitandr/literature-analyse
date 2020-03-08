@@ -2,7 +2,8 @@ import os#, sys
 import json
 
 cash = {}
-
+def formatter_x(name1, name):
+       return name1+name if name[1:3]!=':\\' else name
 def add_book(name, author = 'Unknown', year = 0):
        descriptor[name] = {'author':author, 'year':year, 'read_bytes': 0}
 def del_book(name):
@@ -26,7 +27,7 @@ def set_val(name, val, prop = 'author'):
 def get_descriptor():
        return descriptor
 def get_file(name):
-       return main + '/data/literature/' + name + '/text.txt'
+       return formatter_x(main + '/data/literature/', name) + '/text.txt'
 def get_data_dir():
        return main + '/data'
 def get_book():
@@ -49,7 +50,7 @@ def flush():
        json_descriptor.close()
 
 def get_words_file(name,type_='words'):
-       return main + '/data/literature/' + name + '/'+type_+'.json'
+       return formatter_x(main + '/data/literature/', name) + '/'+type_+'.json'
 
 def save_words_as(words,name, type_='words'):
        json_words = open(get_words_file(name, type_), 'w') 
@@ -122,7 +123,19 @@ def data_const(name)-> int:
       b = get_book()
       data = get_words(b, name)
       return len(data)
-
+def ex_update():
+       tree = os.walk(get_data_dir()+'/literature/ex')
+       folder = []
+       paths = []
+       for i in tree:
+            folder.append(i)
+       for i in folder:
+           for j in i[2]:
+              t = i[0].replace('\\', '/')
+              author = t [t.rfind('/', 0, t.rfind('/')):t.rfind('/')].replace('/', '')
+              add_book(t, author)
+              os.rename(i[0]+'/'+j, i[0]+'/'+'text.txt')
+       flush()
 main = os.path.dirname(os.getcwd())
 #sys.path.append(main)
 

@@ -44,7 +44,7 @@ SENTENSES = True#False
 UNKNOWN_WORDS = True
 COMBINATIONS = True
 NAMES = True
-CREATE_LANG_FILE = False#True
+CREATE_LANG_FILE = True
 
 l_range = range(1072, 1104)
 names_lemmes = ['Geox', 'Name', 'Surn', 'Patr']
@@ -240,6 +240,6 @@ multi_text = []
 denials = 0
 if __name__ == '__main__':
        if CREATE_LANG_FILE:
-              dt.add_file_as('', 'multi_text.txt', True)
+              dt.add_file_as('', 'multi_text.txt', restart = False)
        read_all()
        

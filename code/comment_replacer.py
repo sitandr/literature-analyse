@@ -17,6 +17,7 @@ for i in dt.get_all_books():
               j+=1
        if j!=0:
               print(str(i)+': removed '+str(j)+' comments')
+       text = text.replace('<', '').replace('>', '')
        f = open(dt.get_file(i),'w')
        f.write(text)
        f.close()
