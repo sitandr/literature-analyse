@@ -1,16 +1,14 @@
 from chardet.universaldetector import UniversalDetector
-
-
 import os
+import json
 
 
 
-
-def opener(file):
+def opener(file, prefix = 'texts/'):
       detector = UniversalDetector()
-      detector.feed(open('texts/'+file, 'rb').read())
+      detector.feed(open(prefix+file, 'rb').read())
       detector.close()
-      return open('texts/'+file, encoding = detector.result['encoding']).read()
+      return open(prefix+file, encoding = detector.result['encoding']).read()
 
 import regex
 def analyse(text):
@@ -49,20 +47,28 @@ def analyse_2(text):
             #last_2 = last
             last = i
       return pairs, len(text)
+
+def cashed_analyse(file):
+    try:
+        return json.loads(opener('cash_'+file, prefix = 'cashes/'))
+    except:
+        text = analyse_2(opener(file))
+        f = open( 'cashes/cash_'+file, 'w')
+        json.dump(text, f)
+        f.close()
+        return text
 def encoder(s):
       return (ord(s[0])-1072)*33+(ord(s[1])-1072)
 def read_all():
       all_ = os.listdir('texts')
       authors = {}
       for file in all_:
+            if 'cash' in file or 'ignore' in file:
+                pass
             author = file[:file.find('_')]
-            text = opener(file)
-            #print('!',file)
-            #print(text[:100])
-            #print('####')
-            #print(open('texts/'+file, encoding = 'ansi').read()[:50])
+            analysed = cashed_analyse(file)
             if author in authors:
-                  authors[author].append(analyse_2(text))
+                  authors[author].append(analysed)
             else:
-                  authors[author] = [analyse_2(text)]
+                  authors[author] = [analysed]
       return authors
