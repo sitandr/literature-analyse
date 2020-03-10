@@ -21,7 +21,8 @@ def check(string, net_ = None):
       for j in d[0]:
             arr[int(j)] = d[0][j]
       
-      all_ = math.e**(np.abs(net.activate(arr)-1))
+      all_ = np.round(math.e**(np.abs(net.activate(arr)-1)), 3)
+      all_ = all_/sum(all_)
       res = -1
       ind = -1
       for i in range(L):
