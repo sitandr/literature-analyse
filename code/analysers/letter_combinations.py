@@ -47,9 +47,9 @@ def analyse_2(text, f=2):
             last_2 = last
             last = i
       return pairs if f==2 else triples, len(text)
-def cutter(text, step = 500):
-      arr = [text[_*step:(_+1)*step] for _ in range(len(text)//300)]
-      arr += [text[(len(text)//300)*300:-1]]
+def cutter(text, step = 150):
+      arr = [text[_*step:(_+1)*step] for _ in range(len(text)//step)]
+      arr += [text[(len(text)//step)*step:-1]]
       arr[-1] = arr[-1]+text[-1]
       return arr
 def cashed_analyse(file, f = 2, cut = False):

@@ -31,27 +31,40 @@ def check(string, net_ = None):
 
 if __name__ == "__main__":
       time1 = time.time()
-      authors = read_all(3, False)
+      authors = read_all(3)
       time2 = time.time()
       print(time2-time1)
       max_ = max(map(lambda t: len(authors[t]), authors))
       max_len = max(map(lambda t: max(map(lambda t1:t1[1], authors[t])), authors))
       classes = [_ for _ in authors]
       L = len(classes)
-      ds = SupervisedDataSet(33*33*33, L)
+      
       for author in authors:
+            data = SupervisedDataSet(33*33*33, L)
             for text in authors[author]:
                   arr = np.zeros(33*33*33, dtype = 'int8')
                   for j in text[0]:
                         arr[int(j)] = text[0][j]
                   arr2 = np.zeros(L, dtype = 'int8')
                   arr2[classes.index(author)] = 1
-                  ds.addSample(arr, arr2)
-
-
+                  data.addSample(arr, arr2)
+                  del arr,arr2
+                  print('!')
+            data.saveToFile('cashes/data_3_'+str(author)+'.mod')
+            del data
+            print(author, 'constructed')
+      print('data constructed')
+      del authors
       net     = buildNetwork(33*33*33, 10, 10, L, bias=True)
-      trainer = RPropMinusTrainer(net, dataset=ds)
-      trainer.trainEpochs(100)
+      trainer = RPropMinusTrainer(net)
+      print('training started')
+      for i in range(20):
+            for author in authors:
+                  data = SupervisedDataSet.loadFromFile('cashes/data_3_'+str(author)+'.mod')
+                  for j in range(5):
+                        e = trainer.trainOnDataset(data)
+                        print(i, author, j, 'time:', time.time()-time2, e)
+                  del data
       print(trainer.testOnData())
       NetworkWriter.writeToFile(net, 'filename_3.xml')
       s = 0
